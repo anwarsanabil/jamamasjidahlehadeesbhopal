@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جامع مسجد اہل حدیث - نیا کبادخانہ بھوپال</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Sans+Urdu:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans Urdu', 'Amiri', serif;
+            scroll-behavior: smooth;
+        }
+        
+        .islamic-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 30c0-16.569 13.431-30 30-30v60c-16.569 0-30-13.431-30-30zM0 30c0 16.569 13.431 30 30 30V0C13.431 0 0 13.431 0 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .prayer-card {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .quote-card {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+        }
+        
+        .khutba-card {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        
+        .event-card {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        }
+        
+        .mosque-icon {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .current-prayer {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: white;
+        }
+        
+        .modal {
+            backdrop-filter: blur(5px);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .accordion-content.active {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-teal-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-emerald-800 to-teal-700 islamic-pattern text-white py-8 shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <!-- Navigation -->
+            <nav class="flex justify-between items-center mb-6">
+                <div class="flex items-center">
+                    <svg class="w-10 h-10 mosque-icon mr-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L8 6v2H6v2h12V8h-2V6l-4-4zM4 10v12h16V10H4zm2 2h12v8H6v-8zm2 2v4h8v-4H8z"/>
+                        <circle cx="12" cy="4" r="1"/>
+                    </svg>
+                    <span class="text-xl font-bold">جامع مسجد اہل حدیث</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 space-x-reverse">
+                    <a href="#home" class="nav-link hover:text-yellow-300 transition-colors cursor-pointer" data-key="nav-home">ہوم</a>
+                    <a href="#prayers" class="nav-link hover:text-yellow-300 transition-colors cursor-pointer" data-key="nav-prayers">نماز</a>
+                    <a href="#quotes" class="nav-link hover:text-yellow-300 transition-colors cursor-pointer" data-key="nav-quotes">اقوال</a>
+                    <a href="#khutba" class="nav-link hover:text-yellow-300 transition-colors cursor-pointer" data-key="nav-khutba">خطبہ</a>
+                    <a href="#events" class="nav-link hover:text-yellow-300 transition-colors cursor-pointer" data-key="nav-events">پروگرام</a>
+                    <a href="#about" class="nav-link hover:text-yellow-300 transition-colors cursor-pointer" data-key="nav-about">تعارف</a>
+                    
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <button id="lang-btn" class="bg-yellow-500 hover:bg-yellow-600 text-emerald-900 px-3 py-1 rounded-lg font-semibold transition-colors flex items-center space-x-1 space-x-reverse">
+                            <span id="current-lang">اردو</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="lang-dropdown" class="hidden absolute left-0 mt-2 w-32 bg-white rounded-lg shadow-lg z-50">
+                            <button onclick="changeLanguage('ur')" class="block w-full text-right px-4 py-2 text-emerald-800 hover:bg-emerald-50 rounded-t-lg">اردو</button>
+                            <button onclick="changeLanguage('hi')" class="block w-full text-right px-4 py-2 text-emerald-800 hover:bg-emerald-50">हिंदी</button>
+                            <button onclick="changeLanguage('en')" class="block w-full text-right px-4 py-2 text-emerald-800 hover:bg-emerald-50 rounded-b-lg">English</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </nav>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden bg-emerald-900 rounded-lg p-4 mb-6">
+                <a href="#home" class="block py-2 hover:text-yellow-300 cursor-pointer mobile-nav-link" data-key="nav-home">ہوم</a>
+                <a href="#prayers" class="block py-2 hover:text-yellow-300 cursor-pointer mobile-nav-link" data-key="nav-prayers">نماز</a>
+                <a href="#quotes" class="block py-2 hover:text-yellow-300 cursor-pointer mobile-nav-link" data-key="nav-quotes">اقوال</a>
+                <a href="#khutba" class="block py-2 hover:text-yellow-300 cursor-pointer mobile-nav-link" data-key="nav-khutba">خطبہ</a>
+                <a href="#events" class="block py-2 hover:text-yellow-300 cursor-pointer mobile-nav-link" data-key="nav-events">پروگرام</a>
+                <a href="#about" class="block py-2 hover:text-yellow-300 cursor-pointer mobile-nav-link" data-key="nav-about">تعارف</a>
+                <div class="border-t border-emerald-700 mt-4 pt-4">
+                    <p class="text-sm text-emerald-300 mb-2" data-key="language">زبان:</p>
+                    <div class="flex space-x-2 space-x-reverse">
+                        <button onclick="changeLanguage('ur')" class="bg-yellow-500 text-emerald-900 px-3 py-1 rounded text-sm font-semibold">اردو</button>
+                        <button onclick="changeLanguage('hi')" class="bg-yellow-500 text-emerald-900 px-3 py-1 rounded text-sm font-semibold">हिंदी</button>
+                        <button onclick="changeLanguage('en')" class="bg-yellow-500 text-emerald-900 px-3 py-1 rounded text-sm font-semibold">English</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hero Section -->
+            <div class="text-center" id="home">
+                <div class="flex items-center justify-center mb-4">
+                    <svg class="w-16 h-16 mosque-icon mr-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L8 6v2H6v2h12V8h-2V6l-4-4zM4 10v12h16V10H4zm2 2h12v8H6v-8zm2 2v4h8v-4H8z"/>
+                        <circle cx="12" cy="4" r="1"/>
+                    </svg>
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2" data-key="mosque-name">جامع مسجد اہل حدیث</h1>
+                        <p class="text-xl opacity-90" data-key="location">نیا کبادخانہ، بھوپال</p>
+                    </div>
+                </div>
+                <p class="text-lg opacity-80 mb-4" data-key="welcome">اللہ کے گھر میں خوش آمدید</p>
+                <button onclick="openModal('welcome-modal')" class="bg-yellow-500 hover:bg-yellow-600 text-emerald-900 px-6 py-3 rounded-lg font-semibold transition-colors" data-key="learn-more">
+                    مسجد کے بارے میں جانیں
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Prayer Times Section -->
+        <section class="mb-12 fade-in" id="prayers">
+            <h2 class="text-3xl font-bold text-center text-emerald-800 mb-8" data-key="prayer-times">نماز کے اوقات</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="prayer-card text-white p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300">
+                    <h3 class="text-xl font-semibold mb-2">فجر</h3>
+                    <p class="text-2xl font-bold" id="fajr-time">5:30 AM</p>
+                </div>
+                <div class="prayer-card text-white p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300">
+                    <h3 class="text-xl font-semibold mb-2">ظہر</h3>
+                    <p class="text-2xl font-bold" id="dhuhr-time">12:45 PM</p>
+                </div>
+                <div class="prayer-card text-white p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300">
+                    <h3 class="text-xl font-semibold mb-2">عصر</h3>
+                    <p class="text-2xl font-bold" id="asr-time">4:15 PM</p>
+                </div>
+                <div class="prayer-card text-white p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300">
+                    <h3 class="text-xl font-semibold mb-2">مغرب</h3>
+                    <p class="text-2xl font-bold" id="maghrib-time">6:30 PM</p>
+                </div>
+                <div class="prayer-card text-white p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300">
+                    <h3 class="text-xl font-semibold mb-2">عشاء</h3>
+                    <p class="text-2xl font-bold" id="isha-time">8:00 PM</p>
+                </div>
+            </div>
+            <div class="text-center mt-6">
+                <p class="text-emerald-700 font-semibold">آج کی تاریخ: <span id="current-date"></span></p>
+                <p class="text-emerald-600 mt-2">اگلی نماز: <span id="next-prayer" class="font-bold"></span></p>
+            </div>
+            
+            <!-- Islamic Calendar -->
+            <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-emerald-800 mb-4 text-center">اسلامی کیلنڈر</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-emerald-50 p-4 rounded-lg">
+                        <p class="font-semibold text-emerald-800">آج کی ہجری تاریخ</p>
+                        <p class="text-lg" id="hijri-date">15 ربیع الاول 1445</p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-lg">
+                        <p class="font-semibold text-emerald-800">اگلا اسلامی مہینہ</p>
+                        <p class="text-lg">ربیع الثانی</p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-lg">
+                        <p class="font-semibold text-emerald-800">اہم دن</p>
+                        <p class="text-lg">جمعہ المبارک</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Islamic Quotes Section -->
+        <section class="mb-12 fade-in" id="quotes">
+            <h2 class="text-3xl font-bold text-center text-purple-800 mb-8">دینی اقوال</h2>
+            
+            <!-- Quote Tabs -->
+            <div class="flex flex-wrap justify-center mb-6 space-x-2 space-x-reverse">
+                <button onclick="showQuoteTab('quran')" class="tab-btn tab-active px-4 py-2 rounded-lg font-semibold transition-all" id="quran-tab">قرآنی آیات</button>
+                <button onclick="showQuoteTab('hadith')" class="tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold transition-all" id="hadith-tab">احادیث</button>
+                <button onclick="showQuoteTab('dua')" class="tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold transition-all" id="dua-tab">دعائیں</button>
+            </div>
+            
+            <!-- Quran Quotes -->
+            <div id="quran-quotes" class="quote-tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="quote-card text-white p-8 rounded-xl shadow-lg">
+                        <div class="text-4xl mb-4 text-center">📿</div>
+                        <p class="text-lg mb-4 text-center leading-relaxed">
+                            "اور جو اللہ پر توکل کرے تو وہ اس کے لیے کافی ہے"
+                        </p>
+                        <p class="text-sm text-center opacity-80">- سورہ طلاق، آیت 3</p>
+                    </div>
+                    <div class="quote-card text-white p-8 rounded-xl shadow-lg">
+                        <div class="text-4xl mb-4 text-center">🤲</div>
+                        <p class="text-lg mb-4 text-center leading-relaxed">
+                            "اور اپنے رب سے مغفرت مانگو، بے شک وہ بہت معاف کرنے والا ہے"
+                        </p>
+                        <p class="text-sm text-center opacity-80">- سورہ نوح، آیت 10</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hadith Quotes -->
+            <div id="hadith-quotes" class="quote-tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="quote-card text-white p-8 rounded-xl shadow-lg">
+                        <div class="text-4xl mb-4 text-center">🕌</div>
+                        <p class="text-lg mb-4 text-center leading-relaxed">
+                            "نماز مومن کا معراج ہے"
+                        </p>
+                        <p class="text-sm text-center opacity-80">- حدیث شریف</p>
+                    </div>
+                    <div class="quote-card text-white p-8 rounded-xl shadow-lg">
+                        <div class="text-4xl mb-4 text-center">📖</div>
+                        <p class="text-lg mb-4 text-center leading-relaxed">
+                            "علم حاصل کرو، چاہے تمہیں چین جانا پڑے"
+                        </p>
+                        <p class="text-sm text-center opacity-80">- حدیث شریف</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dua Quotes -->
+            <div id="dua-quotes" class="quote-tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="quote-card text-white p-8 rounded-xl shadow-lg">
+                        <div class="text-4xl mb-4 text-center">🤲</div>
+                        <p class="text-lg mb-4 text-center leading-relaxed">
+                            "رَبَّنَا آتِنَا فِی الدُّنْیَا حَسَنَۃً وَفِی الْآخِرَۃِ حَسَنَۃً"
+                        </p>
+                        <p class="text-sm text-center opacity-80">- دعائے خیر</p>
+                    </div>
+                    <div class="quote-card text-white p-8 rounded-xl shadow-lg">
+                        <div class="text-4xl mb-4 text-center">🌙</div>
+                        <p class="text-lg mb-4 text-center leading-relaxed">
+                            "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا"
+                        </p>
+                        <p class="text-sm text-center opacity-80">- کھانے کی دعا</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Friday Khutba Section -->
+        <section class="mb-12 fade-in" id="khutba">
+            <h2 class="text-3xl font-bold text-center text-red-800 mb-8">جمعہ کا خطبہ</h2>
+            <div class="khutba-card text-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+                <div class="text-center mb-6">
+                    <div class="text-5xl mb-4">🕌</div>
+                    <h3 class="text-2xl font-bold mb-2">جمعہ مبارک</h3>
+                    <p class="text-lg opacity-90">ہر جمعہ کو خطبہ کا وقت</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold mb-4 text-center">خطبہ کا وقت</h4>
+                        <div class="text-center">
+                            <p class="text-3xl font-bold mb-2">1:00 PM</p>
+                            <p class="opacity-80">ہر جمعہ</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold mb-4 text-center">اس ہفتے کا موضوع</h4>
+                        <p class="text-center text-lg leading-relaxed">
+                            "صبر اور شکر کی اہمیت"
+                        </p>
+                        <p class="text-center text-sm opacity-80 mt-2">خطیب: مولانا محمد احمد</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8 bg-white bg-opacity-10 p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-4 text-center">جمعہ کی فضیلت</h4>
+                    <p class="text-center leading-relaxed">
+                        "جمعہ کا دن مسلمانوں کے لیے ہفتے کا بہترین دن ہے۔ اس دن خاص دعائیں قبول ہوتی ہیں اور اللہ کی رحمت نازل ہوتی ہے۔"
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events & Programs Section -->
+        <section class="mb-12 fade-in" id="events">
+            <h2 class="text-3xl font-bold text-center text-orange-800 mb-8">پروگرام اور تقریبات</h2>
+            
+            <!-- Monthly Calendar -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <h3 class="text-2xl font-bold text-center text-orange-800 mb-6">اس مہینے کے پروگرام</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="event-card text-white p-6 rounded-lg">
+                        <div class="text-3xl mb-3 text-center">📚</div>
+                        <h4 class="text-lg font-semibold mb-2">قرآن کلاس</h4>
+                        <p class="text-sm mb-2">ہر اتوار - صبح 9:00 بجے</p>
+                        <p class="text-xs opacity-80">بچوں اور بڑوں کے لیے</p>
+                    </div>
+                    <div class="event-card text-white p-6 rounded-lg">
+                        <div class="text-3xl mb-3 text-center">🎓</div>
+                        <h4 class="text-lg font-semibold mb-2">اسلامی تعلیم</h4>
+                        <p class="text-sm mb-2">ہر منگل - شام 6:00 بجے</p>
+                        <p class="text-xs opacity-80">نوجوانوں کے لیے خاص</p>
+                    </div>
+                    <div class="event-card text-white p-6 rounded-lg">
+                        <div class="text-3xl mb-3 text-center">🤝</div>
+                        <h4 class="text-lg font-semibold mb-2">کمیونٹی میٹنگ</h4>
+                        <p class="text-sm mb-2">پہلا جمعرات - رات 8:00 بجے</p>
+                        <p class="text-xs opacity-80">تمام اہل محلہ کے لیے</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Events -->
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold text-center text-orange-800 mb-6">آنے والی تقریبات</h3>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-orange-500 pl-4 py-3 bg-orange-50 rounded-r-lg">
+                        <h4 class="font-semibold text-orange-800">میلاد النبی ﷺ محفل</h4>
+                        <p class="text-sm text-gray-600">12 ربیع الاول - شام 7:00 بجے</p>
+                        <p class="text-xs text-gray-500">خصوصی نعت خوانی اور تقریر</p>
+                    </div>
+                    <div class="border-l-4 border-orange-500 pl-4 py-3 bg-orange-50 rounded-r-lg">
+                        <h4 class="font-semibold text-orange-800">قرآن مجید ختم</h4>
+                        <p class="text-sm text-gray-600">ہر ماہ کی آخری رات - رات 10:00 بجے</p>
+                        <p class="text-xs text-gray-500">اجتماعی دعا کے ساتھ</p>
+                    </div>
+                    <div class="border-l-4 border-orange-500 pl-4 py-3 bg-orange-50 rounded-r-lg">
+                        <h4 class="font-semibold text-orange-800">صدقہ و زکوٰۃ تقسیم</h4>
+                        <p class="text-sm text-gray-600">ہر جمعہ - نماز کے بعد</p>
+                        <p class="text-xs text-gray-500">ضرورت مندوں کے لیے</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section with Accordion -->
+        <section class="mb-12 fade-in" id="about">
+            <h2 class="text-3xl font-bold text-center text-emerald-800 mb-8">مسجد کا تعارف</h2>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <!-- History Accordion -->
+                <div class="border-b">
+                    <button onclick="toggleAccordion('history')" class="w-full text-right p-6 bg-emerald-50 hover:bg-emerald-100 transition-colors flex justify-between items-center">
+                        <svg class="w-5 h-5 transform transition-transform accordion-icon" id="history-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-emerald-800">مسجد کی تاریخ</h3>
+                    </button>
+                    <div id="history-content" class="accordion-content p-6">
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            جامع مسجد اہل حدیث نیا کبادخانہ بھوپال کی تعمیر 1995 میں مکمل ہوئی۔ یہ مسجد اہل حدیث فکر کے مطابق بنائی گئی ہے اور یہاں قرآن و سنت کی روشنی میں تعلیمات دی جاتی ہیں۔
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            مسجد کی بنیاد مقامی مسلم کمیونٹی کے تعاون سے رکھی گئی اور آج یہ علاقے کی سب سے بڑی مسجد ہے۔
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Facilities Accordion -->
+                <div class="border-b">
+                    <button onclick="toggleAccordion('facilities')" class="w-full text-right p-6 bg-emerald-50 hover:bg-emerald-100 transition-colors flex justify-between items-center">
+                        <svg class="w-5 h-5 transform transition-transform accordion-icon" id="facilities-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-emerald-800">سہولات</h3>
+                    </button>
+                    <div id="facilities-content" class="accordion-content p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-2xl">🕌</span>
+                                <span>500 افراد کی گنجائش</span>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-2xl">🚿</span>
+                                <span>وضو خانہ (مرد و خواتین)</span>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-2xl">📚</span>
+                                <span>اسلامی لائبریری</span>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-2xl">🎓</span>
+                                <span>مدرسہ کلاس رومز</span>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-2xl">🅿️</span>
+                                <span>پارکنگ کی سہولت</span>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-2xl">❄️</span>
+                                <span>ایئر کنڈیشننگ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Donation Accordion -->
+                <div>
+                    <button onclick="toggleAccordion('donation')" class="w-full text-right p-6 bg-emerald-50 hover:bg-emerald-100 transition-colors flex justify-between items-center">
+                        <svg class="w-5 h-5 transform transition-transform accordion-icon" id="donation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-emerald-800">چندہ اور تعاون</h3>
+                    </button>
+                    <div id="donation-content" class="accordion-content p-6">
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            مسجد کی بہتری اور مختلف پروگراموں کے لیے آپ کا تعاون درکار ہے۔ آپ مندرجہ ذیل طریقوں سے تعاون کر سکتے ہیں:
+                        </p>
+                        <div class="bg-emerald-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-emerald-800 mb-2">چندہ کے طریقے:</h4>
+                            <ul class="space-y-2 text-gray-700">
+                                <li>• نقد رقم (مسجد میں براہ راست)</li>
+                                <li>• ماہانہ چندہ</li>
+                                <li>• زکوٰۃ اور صدقات</li>
+                                <li>• عید کے موقع پر خصوصی چندہ</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Information -->
+        <section class="fade-in">
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto text-center">
+                <h3 class="text-2xl font-bold text-emerald-800 mb-6">رابطہ کی معلومات</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-center space-x-3 space-x-reverse">
+                        <span class="text-2xl">📍</span>
+                        <p class="text-lg"><strong>پتہ:</strong> نیا کبادخانہ، بھوپال، مدھیہ پردیش</p>
+                    </div>
+                    <div class="flex items-center justify-center space-x-3 space-x-reverse">
+                        <span class="text-2xl">👨‍🏫</span>
+                        <p class="text-lg"><strong>امام:</strong> مولانا محمد احمد</p>
+                    </div>
+                    <div class="flex items-center justify-center space-x-3 space-x-reverse">
+                        <span class="text-2xl">📞</span>
+                        <p class="text-lg"><strong>فون:</strong> +91 755 123 4567</p>
+                    </div>
+                    <p class="text-emerald-700 font-semibold mt-6">اللہ آپ سب کو برکت دے</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-5xl mb-4">🕌</div>
+                <h2 class="text-2xl font-bold text-emerald-800 mb-4">جامع مسجد اہل حدیث میں خوش آمدید</h2>
+            </div>
+            <div class="text-gray-700 leading-relaxed space-y-4">
+                <p>
+                    یہ مسجد 1995 سے نیا کبادخانہ بھوپال میں خدمات انجام دے رہی ہے۔ ہم یہاں قرآن و سنت کی روشنی میں اسلامی تعلیمات فراہم کرتے ہیں۔
+                </p>
+                <p>
+                    ہماری مسجد میں روزانہ پانچ وقت کی نماز، جمعہ کا خطبہ، قرآن کی تعلیم، اور مختلف اسلامی پروگرام منعقد ہوتے ہیں۔
+                </p>
+                <p class="text-emerald-700 font-semibold text-center">
+                    آپ سب کا دل سے استقبال ہے!
+                </p>
+            </div>
+            <div class="text-center mt-6">
+                <button onclick="closeModal('welcome-modal')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    بند کریں
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-emerald-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-2">جامع مسجد اہل حدیث - نیا کبادخانہ، بھوپال</p>
+            <p class="text-sm opacity-80">اللہ کی رحمت اور برکت آپ سب پر ہو</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Mobile navigation links
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Update current date
+        function updateDate() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ur-PK', options);
+        }
+
+        // Calculate next prayer
+        function updateNextPrayer() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            
+            const prayers = [
+                { name: 'فجر', time: 5 * 60 + 30 },
+                { name: 'ظہر', time: 12 * 60 + 45 },
+                { name: 'عصر', time: 16 * 60 + 15 },
+                { name: 'مغرب', time: 18 * 60 + 30 },
+                { name: 'عشاء', time: 20 * 60 + 0 }
+            ];
+            
+            let nextPrayer = prayers.find(prayer => prayer.time > currentTime);
+            if (!nextPrayer) {
+                nextPrayer = prayers[0]; // Next day Fajr
+            }
+            
+            document.getElementById('next-prayer').textContent = nextPrayer.name;
+            
+            // Highlight current prayer time
+            prayers.forEach((prayer, index) => {
+                const prayerCards = document.querySelectorAll('.prayer-card');
+                if (Math.abs(prayer.time - currentTime) < 30) { // Within 30 minutes
+                    prayerCards[index].classList.add('current-prayer');
+                }
+            });
+        }
+
+        // Quote tabs functionality
+        function showQuoteTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.quote-tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-quotes').classList.remove('hidden');
+            
+            // Add active class to selected tab
+            const activeTab = document.getElementById(tabName + '-tab');
+            activeTab.classList.add('tab-active');
+            activeTab.classList.remove('bg-gray-200', 'text-gray-700');
+        }
+
+        // Accordion functionality
+        function toggleAccordion(section) {
+            const content = document.getElementById(section + '-content');
+            const icon = document.getElementById(section + '-icon');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Close all other accordions
+                document.querySelectorAll('.accordion-content').forEach(acc => {
+                    acc.classList.remove('active');
+                });
+                document.querySelectorAll('.accordion-icon').forEach(ic => {
+                    ic.style.transform = 'rotate(0deg)';
+                });
+                
+                // Open selected accordion
+                content.classList.add('active');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Modal functionality
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+
+        // Add fade-in animation on scroll
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        }
+
+        // Language translations
+        const translations = {
+            ur: {
+                'nav-home': 'ہوم',
+                'nav-prayers': 'نماز',
+                'nav-quotes': 'اقوال',
+                'nav-khutba': 'خطبہ',
+                'nav-events': 'پروگرام',
+                'nav-about': 'تعارف',
+                'language': 'زبان:',
+                'mosque-name': 'جامع مسجد اہل حدیث',
+                'location': 'نیا کبادخانہ، بھوپال',
+                'welcome': 'اللہ کے گھر میں خوش آمدید',
+                'learn-more': 'مسجد کے بارے میں جانیں',
+                'prayer-times': 'نماز کے اوقات',
+                'current-lang-text': 'اردو'
+            },
+            hi: {
+                'nav-home': 'होम',
+                'nav-prayers': 'नमाज़',
+                'nav-quotes': 'उद्धरण',
+                'nav-khutba': 'खुत्बा',
+                'nav-events': 'कार्यक्रम',
+                'nav-about': 'परिचय',
+                'language': 'भाषा:',
+                'mosque-name': 'जामा मस्जिद अहले हदीस',
+                'location': 'नया कबाडखाना, भोपाल',
+                'welcome': 'अल्लाह के घर में आपका स्वागत है',
+                'learn-more': 'मस्जिद के बारे में जानें',
+                'prayer-times': 'नमाज़ का समय',
+                'current-lang-text': 'हिंदी'
+            },
+            en: {
+                'nav-home': 'Home',
+                'nav-prayers': 'Prayers',
+                'nav-quotes': 'Quotes',
+                'nav-khutba': 'Khutba',
+                'nav-events': 'Events',
+                'nav-about': 'About',
+                'language': 'Language:',
+                'mosque-name': 'Jama Masjid Ahle Hadees',
+                'location': 'Naya Kabadkhana, Bhopal',
+                'welcome': 'Welcome to Allah\'s House',
+                'learn-more': 'Learn About Mosque',
+                'prayer-times': 'Prayer Times',
+                'current-lang-text': 'English'
+            }
+        };
+
+        let currentLanguage = 'ur';
+
+        // Language change functionality
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update text direction
+            document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
+            document.documentElement.lang = lang;
+            
+            // Update all elements with data-key attributes
+            document.querySelectorAll('[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            
+            // Update current language display
+            document.getElementById('current-lang').textContent = translations[lang]['current-lang-text'];
+            
+            // Close dropdown
+            document.getElementById('lang-dropdown').classList.add('hidden');
+            
+            // Store language preference
+            localStorage.setItem('preferred-language', lang);
+        }
+
+        // Language dropdown toggle
+        document.getElementById('lang-btn').addEventListener('click', function() {
+            document.getElementById('lang-dropdown').classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('lang-btn').contains(e.target)) {
+                document.getElementById('lang-dropdown').classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved language preference
+            const savedLang = localStorage.getItem('preferred-language') || 'ur';
+            if (savedLang !== 'ur') {
+                changeLanguage(savedLang);
+            }
+            
+            updateDate();
+            updateNextPrayer();
+            animateOnScroll();
+            
+            // Update every minute
+            setInterval(updateNextPrayer, 60000);
+        });
+
+        window.addEventListener('scroll', animateOnScroll);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97af339541a43e27',t:'MTc1NzE3NDY2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
